@@ -54,7 +54,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>
     );
 
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE Inventory i
         SET i.reservedCount = i.reservedCount + :roomsCount

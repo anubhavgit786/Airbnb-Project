@@ -15,6 +15,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(
+        name = "hotel_min_price",
+        indexes = {
+                @Index(name = "idx_hotel_date", columnList = "hotel_id, date")
+        }
+)
 public class HotelMinPrice
 {
     @Id
