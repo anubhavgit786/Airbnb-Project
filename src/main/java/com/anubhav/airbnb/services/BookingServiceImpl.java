@@ -29,7 +29,7 @@ public class BookingServiceImpl implements BookingService
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
     private final InventoryRepository inventoryRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -67,7 +67,7 @@ public class BookingServiceImpl implements BookingService
         //Redundant Query
         //inventoryRepository.saveAll(inventoryList);
 
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         Booking booking = Booking.createReservedBooking(hotel, room, user, request, BigDecimal.TEN);
         Booking savedBooking = bookingRepository.save(booking);
@@ -89,7 +89,7 @@ public class BookingServiceImpl implements BookingService
             throw new ResourceConflictException("Booking is not under reserved state, cannot add guests");
         }
 
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         List<Guest> guests = guestDtoList
                 .stream()
@@ -107,10 +107,5 @@ public class BookingServiceImpl implements BookingService
         booking = bookingRepository.save(booking);
 
         return modelMapper.map(booking, BookingDto.class);
-    }
-
-    public User getCurrentUser()
-    {
-        return userRepository.findById(1L).orElseThrow(() -> new ResourceNotFoundException("User not found with id: 1"));
     }
 }

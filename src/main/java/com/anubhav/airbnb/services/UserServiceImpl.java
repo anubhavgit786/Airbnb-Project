@@ -1,0 +1,132 @@
+package com.anubhav.airbnb.services;
+
+import com.anubhav.airbnb.config.JwtConfig;
+import com.anubhav.airbnb.dtos.*;
+import com.anubhav.airbnb.exceptions.ResourceConflictException;
+import com.anubhav.airbnb.exceptions.ResourceNotFoundException;
+import com.anubhav.airbnb.exceptions.UnauthorizedException;
+import com.anubhav.airbnb.models.User;
+import com.anubhav.airbnb.repositories.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import jakarta.servlet.http.Cookie;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService
+{
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtConfig jwtConfig;
+
+    @Override
+    public User getUserByEmail(String email)
+    {
+        return userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    }
+
+    @Override
+    public UserDto createUser(SignUpRequestDto request)
+    {
+        boolean emailExists = userRepository.existsByEmail(request.getEmail());
+
+        if(emailExists)
+        {
+            throw new ResourceConflictException("User already exists with email: " + request.getEmail());
+        }
+
+        User user = modelMapper.map(request, User.class);
+        String hash = passwordEncoder.encode(user.getPassword());
+        user.setPassword(hash);
+        User savedUser = userRepository.save(user);
+        return this.modelMapper.map(savedUser, UserDto.class);
+    }
+
+    @Override
+    public UserDto updateUser(UserUpdateDto request)
+    {
+        User user = getCurrentUser();
+
+        if(userRepository.existsByEmailAndIdNot(request.getEmail(), user.getId()))
+        {
+            throw new ResourceConflictException("User already exists with email: " + request.getEmail());
+        }
+
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDto.class);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequestDto request)
+    {
+        User user = getCurrentUser();
+
+        if(!passwordEncoder.matches(request.getOldPassword(), user.getPassword()))
+        {
+            throw new UnauthorizedException("Invalid Credentials");
+        }
+
+        String hash = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(hash);
+        userRepository.save(user);
+    }
+
+    @Override
+    public LoginResponseDto login(LoginRequestDto request, HttpServletResponse response)
+    {
+        var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        var authentication = authenticationManager.authenticate(authToken);
+        var user = (User) authentication.getPrincipal();
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        var cookie = new Cookie("refreshToken", refreshToken);
+
+        cookie.setHttpOnly(true);
+        cookie.setPath("/auth/refresh");
+        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration().intValue());
+        cookie.setSecure(true);
+
+        response.addCookie(cookie);
+
+        return new LoginResponseDto(accessToken);
+    }
+
+    @Override
+    public UserDto me()
+    {
+        var user = getCurrentUser();
+        return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public JwtResponseDto refresh(String refreshToken)
+    {
+        if(!jwtService.validateToken(refreshToken))
+        {
+            throw new UnauthorizedException("Client must authenticate");
+        }
+
+        String email = jwtService.getEmailFromToken(refreshToken);
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User not found."));
+        var accessToken = jwtService.generateAccessToken(user);
+        return new JwtResponseDto(accessToken);
+    }
+
+    @Override
+    public User getCurrentUser()
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        return  (User) authentication.getPrincipal();
+    }
+}
