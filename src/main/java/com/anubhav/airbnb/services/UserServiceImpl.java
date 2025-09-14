@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService
 {
+    private final SessionService sessionService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
@@ -99,6 +100,8 @@ public class UserServiceImpl implements UserService
 
         response.addCookie(cookie);
 
+        sessionService.generateNewSession(user, refreshToken);
+
         return new LoginResponseDto(accessToken);
     }
 
@@ -117,6 +120,7 @@ public class UserServiceImpl implements UserService
             throw new UnauthorizedException("Client must authenticate");
         }
 
+        sessionService.validateSession(refreshToken);
         String email = jwtService.getEmailFromToken(refreshToken);
         User user = userRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User not found."));
         var accessToken = jwtService.generateAccessToken(user);
@@ -128,5 +132,18 @@ public class UserServiceImpl implements UserService
     {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         return  (User) authentication.getPrincipal();
+    }
+
+    @Override
+    public void logout(String refreshToken, HttpServletResponse response)
+    {
+        sessionService.validateSession(refreshToken);
+        sessionService.deleteSession(refreshToken);
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        cookie.setPath("/auth/refresh");
+        cookie.setSecure(true);
+        response.addCookie(cookie);
     }
 }

@@ -4,6 +4,7 @@ import com.anubhav.airbnb.dtos.ChangePasswordRequestDto;
 import com.anubhav.airbnb.dtos.UserDto;
 import com.anubhav.airbnb.dtos.UserUpdateDto;
 import com.anubhav.airbnb.services.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +36,12 @@ public class UserController
     {
         UserDto user = userService.me();
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@CookieValue(value = "refreshToken") String refreshToken, HttpServletResponse response)
+    {
+        userService.logout(refreshToken, response);
+        return ResponseEntity.noContent().build();
     }
 }

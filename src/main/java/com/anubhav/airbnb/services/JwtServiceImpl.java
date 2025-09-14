@@ -61,7 +61,8 @@ public class JwtServiceImpl implements JwtService
         // roles claim as a String like "[ADMIN, USER]"
         String rolesString = claims.get("roles", String.class);
 
-        // remove brackets and split by comma
+        // remove brackets and split by comma -> "ADMIN, USER"
+        // trim -> "ADMIN", "USER"
         return Arrays.stream(
                         rolesString.replace("[", "")
                                 .replace("]", "")

@@ -14,4 +14,5 @@ public interface UserService
     UserDto me();
     JwtResponseDto refresh(String refreshToken);
     User getCurrentUser();
+    void logout(String refreshToken, HttpServletResponse response);
 }

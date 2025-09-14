@@ -61,8 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
                 authorities // 👈 multiple authorities
         );
 
-
-
+        //optional
         authentication.setDetails( new WebAuthenticationDetailsSource().buildDetails(request));
 
         if(SecurityContextHolder.getContext().getAuthentication() == null)
