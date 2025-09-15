@@ -10,7 +10,6 @@ public interface UserService
     UserDto createUser(SignUpRequestDto request);
     UserDto updateUser(UserUpdateDto request, HttpServletResponse response);
     void changePassword(ChangePasswordRequestDto request);
-    LoginResponseDto login(LoginRequestDto request, HttpServletResponse response);
     UserDto me();
     JwtResponseDto refresh(String refreshToken);
     User getCurrentUser();

@@ -29,7 +29,7 @@ public class SessionServiceImpl implements SessionService
         {
             userSession.sort(Comparator.comparing(Session::getLastUsedAt));
 
-            Session leastRecentlyUsedSession = userSession.getFirst();
+            Session leastRecentlyUsedSession = userSession.get(0);
             sessionRepository.delete(leastRecentlyUsedSession);
         }
 

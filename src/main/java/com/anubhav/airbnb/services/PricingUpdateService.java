@@ -53,7 +53,7 @@ public class PricingUpdateService
                 break;
             }
 
-            hotelPage.getContent().forEach(this::updateHotelPrices);
+            hotelPage.getContent().parallelStream().forEach(this::updateHotelPrices);
 
             page++;
         }

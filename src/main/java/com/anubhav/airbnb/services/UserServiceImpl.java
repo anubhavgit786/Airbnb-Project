@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import jakarta.servlet.http.Cookie;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,8 +27,7 @@ public class UserServiceImpl implements UserService
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtConfig jwtConfig;
+
 
     @Override
     public User getUserByEmail(String email)
@@ -91,28 +91,6 @@ public class UserServiceImpl implements UserService
         String hash = passwordEncoder.encode(request.getNewPassword());
         user.setPassword(hash);
         userRepository.save(user);
-    }
-
-    @Override
-    public LoginResponseDto login(LoginRequestDto request, HttpServletResponse response)
-    {
-        var authToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-        var authentication = authenticationManager.authenticate(authToken);
-        var user = (User) authentication.getPrincipal();
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        var cookie = new Cookie("refreshToken", refreshToken);
-
-        cookie.setHttpOnly(true);
-        cookie.setPath("/auth/refresh");
-        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration().intValue());
-        cookie.setSecure(true);
-
-        response.addCookie(cookie);
-
-        sessionService.generateNewSession(user, refreshToken);
-
-        return new LoginResponseDto(accessToken);
     }
 
     @Override
