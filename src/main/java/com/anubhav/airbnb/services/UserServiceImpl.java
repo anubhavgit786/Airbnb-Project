@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService
     }
 
     @Override
-    public UserDto updateUser(UserUpdateDto request)
+    public UserDto updateUser(UserUpdateDto request, HttpServletResponse response)
     {
         User user = getCurrentUser();
 
@@ -62,9 +62,19 @@ public class UserServiceImpl implements UserService
             throw new ResourceConflictException("User already exists with email: " + request.getEmail());
         }
 
+        boolean emailChanged = !user.getEmail().equals(request.getEmail());
+        boolean nameChanged  = !user.getName().equals(request.getName());
+
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         User updatedUser = userRepository.save(user);
+
+        if(emailChanged || nameChanged)
+        {
+            sessionService.deleteAllSessions(user);
+            deleteRefreshTokenFromCookie(response);
+        }
+
         return modelMapper.map(updatedUser, UserDto.class);
     }
 
@@ -139,6 +149,11 @@ public class UserServiceImpl implements UserService
     {
         sessionService.validateSession(refreshToken);
         sessionService.deleteSession(refreshToken);
+        deleteRefreshTokenFromCookie(response);
+    }
+
+    private void deleteRefreshTokenFromCookie(HttpServletResponse response)
+    {
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);

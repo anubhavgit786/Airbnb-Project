@@ -57,4 +57,11 @@ public class SessionServiceImpl implements SessionService
         sessionRepository.findByRefreshToken(refreshToken)
                 .ifPresent(sessionRepository::delete);
     }
+
+    @Override
+    public void deleteAllSessions(User user)
+    {
+        List<Session> sessions = sessionRepository.findByUser(user);
+        sessionRepository.deleteAll(sessions);
+    }
 }

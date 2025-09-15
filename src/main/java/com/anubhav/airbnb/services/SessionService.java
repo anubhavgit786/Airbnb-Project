@@ -7,4 +7,5 @@ public interface SessionService
     void generateNewSession(User user, String refreshToken);
     void validateSession(String refreshToken);
     void deleteSession(String refreshToken);
+    void deleteAllSessions(User user);
 }

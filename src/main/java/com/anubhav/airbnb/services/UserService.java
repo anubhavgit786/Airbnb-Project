@@ -8,7 +8,7 @@ public interface UserService
 {
     User getUserByEmail(String email);
     UserDto createUser(SignUpRequestDto request);
-    UserDto updateUser(UserUpdateDto request);
+    UserDto updateUser(UserUpdateDto request, HttpServletResponse response);
     void changePassword(ChangePasswordRequestDto request);
     LoginResponseDto login(LoginRequestDto request, HttpServletResponse response);
     UserDto me();

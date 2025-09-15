@@ -18,9 +18,9 @@ public class UserController
     private final UserService userService;
 
     @PutMapping("/update")
-    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserUpdateDto request)
+    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserUpdateDto request, HttpServletResponse response)
     {
-        UserDto user = userService.updateUser(request);
+        UserDto user = userService.updateUser(request, response);
         return ResponseEntity.ok(user);
     }
 
