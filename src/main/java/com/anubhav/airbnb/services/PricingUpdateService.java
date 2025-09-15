@@ -69,32 +69,34 @@ public class PricingUpdateService
 
         updateInventoryPrices(inventoryList);
 
-        updateHotelMinPrice(hotel, inventoryList, startDate, endDate);
+        updateHotelMinPrice(hotel, inventoryList);
     }
 
-    private void updateHotelMinPrice(Hotel hotel, List<Inventory> inventoryList, LocalDate startDate, LocalDate endDate)
+    private void updateHotelMinPrice(Hotel hotel, List<Inventory> inventoryList)
     {
-        // Compute minimum price per day for the hotel
-        Map<LocalDate, BigDecimal> dailyMinPrices = inventoryList.stream()
+        // Group inventory by date and find the minimum price for each date
+        Map<LocalDate, BigDecimal> minPricesByDate = inventoryList
+                .stream()
                 .collect(Collectors.groupingBy(
                         Inventory::getDate,
-                        Collectors.mapping(Inventory::getPrice, Collectors.minBy(Comparator.naturalOrder()))
-                ))
-                .entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().orElse(BigDecimal.ZERO)));
+                        Collectors.reducing(BigDecimal.ZERO, Inventory::getPrice, BigDecimal::min)
+                ));
 
-        // Prepare HotelPrice entities in bulk
-        List<HotelMinPrice> hotelPrices = new ArrayList<>();
-        dailyMinPrices.forEach((date, price) ->
-        {
-            HotelMinPrice hotelPrice = hotelMinPriceRepository.findByHotelAndDate(hotel, date)
-                    .orElse(new HotelMinPrice(hotel, date));
-            hotelPrice.setPrice(price);
-            hotelPrices.add(hotelPrice);
-        });
+        // Create or update HotelMinPrice entities
+        List<HotelMinPrice> hotelMinPrices = minPricesByDate.entrySet().stream()
+                .map(entry ->
+                {
+                    LocalDate date = entry.getKey();
+                    BigDecimal minPrice = entry.getValue();
+                    HotelMinPrice hotelPrice = hotelMinPriceRepository.findByHotelAndDate(hotel, date)
+                            .orElse(new HotelMinPrice(hotel, date));
+                    hotelPrice.setPrice(minPrice);
+                    return hotelPrice;
+                })
+                .collect(Collectors.toList());
 
-        // Save all HotelPrice entities in bulk
-        hotelMinPriceRepository.saveAll(hotelPrices);
+        // Save all HotelMinPrice entities in bulk
+        hotelMinPriceRepository.saveAll(hotelMinPrices);
     }
 
     private void updateInventoryPrices(List<Inventory> inventoryList)

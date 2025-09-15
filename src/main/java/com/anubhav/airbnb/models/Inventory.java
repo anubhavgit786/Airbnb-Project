@@ -15,8 +15,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(
         name = "unique_hotel_room_date",
-        columnNames = {"hotel_id", "room_id", "date"}
-))
+        columnNames = {"hotel_id", "room_id", "date"}),
+        indexes = {
+                @Index(name = "idx_date", columnList = "date"),
+                @Index(name = "idx_city_date", columnList = "city, date")
+})
 public class Inventory
 {
     @Id
