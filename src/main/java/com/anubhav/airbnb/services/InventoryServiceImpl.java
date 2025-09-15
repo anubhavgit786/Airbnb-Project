@@ -15,11 +15,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,17 +34,22 @@ public class InventoryServiceImpl implements InventoryService
     private final ModelMapper modelMapper;
     private final HotelMinPriceRepository hotelMinPriceRepository;
 
+    @Async
     @Override
     public void initializeRoomForAYear(Room room)
     {
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.plusYears(1);
+        List<Inventory> inventories = new ArrayList<>();
 
-        for (; !today.isAfter(endDate); today=today.plusDays(1))
+        while (!today.isAfter(endDate))
         {
             Inventory inventory = Inventory.createInventory(room, today);
-            inventoryRepository.save(inventory);
+            inventories.add(inventory);
+            today=today.plusDays(1);
         }
+
+        inventoryRepository.saveAll(inventories); //Batch insert
     }
 
     @Override
