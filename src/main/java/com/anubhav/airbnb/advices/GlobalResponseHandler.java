@@ -29,6 +29,14 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object>
                                   ServerHttpResponse response)
     {
 
+        String path = request.getURI().getPath();
+
+        // Swagger/OpenAPI docs ko wrap nahi karna
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui"))
+        {
+            return body;
+        }
+
         // If already an ApiResponse, don't wrap
         if (body instanceof ApiResponse)
         {

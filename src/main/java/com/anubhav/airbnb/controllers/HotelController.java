@@ -6,6 +6,7 @@ import com.anubhav.airbnb.dtos.HotelReportRequestDto;
 import com.anubhav.airbnb.dtos.HotelReportResponseDto;
 import com.anubhav.airbnb.services.BookingService;
 import com.anubhav.airbnb.services.HotelService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class HotelController
     private final BookingService bookingService;
 
     @GetMapping("/{hotelId}")
+    @Operation(summary = "Get a hotel by Id", tags = {"Admin Hotel"})
     public ResponseEntity<HotelDto> getHotelById(@PathVariable Long hotelId)
     {
         HotelDto hotelDto = hotelService.getHotelById(hotelId);
@@ -31,6 +33,7 @@ public class HotelController
     }
 
     @PostMapping
+    @Operation(summary = "Create a new hotel", tags = {"Admin Hotel"})
     public ResponseEntity<HotelDto> createNewHotel(@Valid @RequestBody HotelDto hotelDto)
     {
         HotelDto savedHotelDto = hotelService.createNewHotel(hotelDto);
@@ -38,6 +41,7 @@ public class HotelController
     }
 
     @PutMapping("/{hotelId}")
+    @Operation(summary = "Update a hotel", tags = {"Admin Hotel"})
     public ResponseEntity<HotelDto> updateHotel(@PathVariable Long hotelId, @Valid @RequestBody HotelDto hotelDto)
     {
         HotelDto updatedHotelDto = hotelService.updateHotel(hotelId, hotelDto);
@@ -45,6 +49,7 @@ public class HotelController
     }
 
     @DeleteMapping("/{hotelId}")
+    @Operation(summary = "Delete a hotel", tags = {"Admin Hotel"})
     public ResponseEntity<Boolean> deleteHotel(@PathVariable Long hotelId)
     {
         hotelService.deleteHotel(hotelId);
@@ -52,6 +57,7 @@ public class HotelController
     }
 
     @PatchMapping("/{hotelId}")
+    @Operation(summary = "Activate a hotel", tags = {"Admin Hotel"})
     public ResponseEntity<HotelDto> activateHotel(@PathVariable Long hotelId)
     {
         hotelService.activateHotel(hotelId);
@@ -60,7 +66,7 @@ public class HotelController
 
 
     @GetMapping
-    //@Operation(summary = "Get all hotels owned by admin", tags = {"Admin Hotel"})
+    @Operation(summary = "Get all hotels owned by admin", tags = {"Admin Hotel"})
     public ResponseEntity<List<HotelDto>> getAllHotels()
     {
         List<HotelDto> response = hotelService.getAllHotels();
@@ -68,7 +74,7 @@ public class HotelController
     }
 
     @GetMapping("/{hotelId}/bookings")
-    //@Operation(summary = "Get all bookings of a hotel", tags = {"Admin Bookings"})
+    @Operation(summary = "Get all bookings of a hotel", tags = {"Admin Bookings"})
     public ResponseEntity<List<BookingDto>> getAllBookingsByHotelId(@PathVariable Long hotelId)
     {
         List<BookingDto> response = bookingService.getAllBookingsByHotelId(hotelId);
@@ -76,7 +82,7 @@ public class HotelController
     }
 
     @GetMapping("/{hotelId}/reports")
-    //@Operation(summary = "Generate a bookings report of a hotel", tags = {"Admin Bookings"})
+    @Operation(summary = "Generate a bookings report of a hotel", tags = {"Admin Bookings"})
     public ResponseEntity<HotelReportResponseDto> getHotelReport(@PathVariable Long hotelId, @RequestBody HotelReportRequestDto request)
     {
         HotelReportResponseDto response = bookingService.getHotelReport(hotelId, request);

@@ -7,6 +7,7 @@ import com.anubhav.airbnb.dtos.HotelPriceDto;
 import com.anubhav.airbnb.dtos.HotelSearchRequestDto;
 import com.anubhav.airbnb.services.HotelService;
 import com.anubhav.airbnb.services.InventoryService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class HotelBrowseController
     private final HotelService hotelService;
 
     @GetMapping("/search")
+    @Operation(summary = "Search hotels", tags = {"Browse Hotels"})
     public ResponseEntity<List<HotelPriceDto>> searchHotels(@Valid @RequestBody HotelSearchRequestDto hotelSearchRequest)
     {
         List<HotelPriceDto> response = inventoryService.searchHotels(hotelSearchRequest);
@@ -31,6 +33,7 @@ public class HotelBrowseController
     }
 
     @GetMapping("/{hotelId}/info")
+    @Operation(summary = "Get a hotel info by hotelId", tags = {"Browse Hotels"})
     public ResponseEntity<HotelInfoDto> getHotelInfo(@PathVariable Long hotelId)
     {
         HotelInfoDto response = hotelService.getHotelInfo(hotelId);

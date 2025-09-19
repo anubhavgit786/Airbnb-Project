@@ -4,6 +4,7 @@ import com.anubhav.airbnb.dtos.*;
 import com.anubhav.airbnb.services.BookingService;
 import com.anubhav.airbnb.services.GuestService;
 import com.anubhav.airbnb.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class UserController
     private final BookingService bookingService;
 
     @PutMapping("/profile")
+    @Operation(summary = "Update the user profile", tags = {"Profile"})
     public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserUpdateDto request, HttpServletResponse response)
     {
         UserDto user = userService.updateUser(request, response);
@@ -30,6 +32,7 @@ public class UserController
     }
 
     @PatchMapping("/change-password")
+    @Operation(summary = "Change the user password", tags = {"Profile"})
     public  ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequestDto request)
     {
         userService.changePassword(request);
@@ -37,6 +40,7 @@ public class UserController
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Get my Profile", tags = {"Profile"})
     public ResponseEntity<UserDto> me()
     {
         UserDto user = userService.me();
@@ -44,6 +48,7 @@ public class UserController
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout user profile", tags = {"Profile"})
     public ResponseEntity<Void> logout(@CookieValue(value = "refreshToken") String refreshToken, HttpServletResponse response)
     {
         userService.logout(refreshToken, response);
@@ -51,7 +56,7 @@ public class UserController
     }
 
     @GetMapping("/myBookings")
-    //@Operation(summary = "Get all my previous bookings", tags = {"Profile"})
+    @Operation(summary = "Get all my previous bookings", tags = {"Profile"})
     public ResponseEntity<List<BookingDto>> getMyBookings()
     {
         List<BookingDto> bookings = bookingService.getMyBookings();
@@ -59,7 +64,7 @@ public class UserController
     }
 
     @GetMapping("/profile")
-    //@Operation(summary = "Get my Profile", tags = {"Profile"})
+    @Operation(summary = "Get my Profile", tags = {"Profile"})
     public ResponseEntity<UserDto> getMyProfile()
     {
         UserDto userDto = userService.getMyProfile();
@@ -67,7 +72,7 @@ public class UserController
     }
 
     @GetMapping("/guests")
-    //@Operation(summary = "Get all my guests", tags = {"Booking Guests"})
+    @Operation(summary = "Get all my guests", tags = {"Booking Guests"})
     public ResponseEntity<List<GuestDto>> getAllGuests()
     {
         List<GuestDto> guests = guestService.getAllGuests();
@@ -75,7 +80,7 @@ public class UserController
     }
 
     @PostMapping("/guests")
-   // @Operation(summary = "Add a new guest to my guests list", tags = {"Booking Guests"})
+    @Operation(summary = "Add a new guest to my guests list", tags = {"Booking Guests"})
     public ResponseEntity<GuestDto> addNewGuest( @Valid @RequestBody GuestDto guestDto)
     {
         GuestDto guest = guestService.addNewGuest(guestDto);
@@ -83,7 +88,7 @@ public class UserController
     }
 
     @PutMapping("guests/{guestId}")
-    //@Operation(summary = "Update a guest", tags = {"Booking Guests"})
+    @Operation(summary = "Update a guest", tags = {"Booking Guests"})
     public ResponseEntity<Void> updateGuest(@PathVariable Long guestId, @Valid @RequestBody GuestDto guestDto)
     {
         guestService.updateGuest(guestId, guestDto);
@@ -91,7 +96,7 @@ public class UserController
     }
 
     @DeleteMapping("guests/{guestId}")
-    //@Operation(summary = "Remove a guest", tags = {"Booking Guests"})
+    @Operation(summary = "Remove a guest", tags = {"Booking Guests"})
     public ResponseEntity<Void> deleteGuest(@PathVariable Long guestId)
     {
         guestService.deleteGuest(guestId);
