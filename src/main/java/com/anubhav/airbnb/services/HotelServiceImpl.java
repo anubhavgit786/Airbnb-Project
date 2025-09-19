@@ -6,6 +6,7 @@ import com.anubhav.airbnb.dtos.RoomDto;
 import com.anubhav.airbnb.exceptions.ResourceNotFoundException;
 import com.anubhav.airbnb.models.Hotel;
 import com.anubhav.airbnb.models.Room;
+import com.anubhav.airbnb.models.User;
 import com.anubhav.airbnb.repositories.HotelRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -19,6 +20,7 @@ public class HotelServiceImpl implements HotelService
 {
     private final InventoryService inventoryService;
     private final HotelRepository hotelRepository;
+    private final UserService userService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -80,5 +82,13 @@ public class HotelServiceImpl implements HotelService
                 .toList();
         HotelDto hotelDto = modelMapper.map(hotel, HotelDto.class);
         return new HotelInfoDto(hotelDto, rooms);
+    }
+
+    @Override
+    public List<HotelDto> getAllHotels()
+    {
+        User user = userService.getCurrentUser();
+        List<Hotel> hotels = hotelRepository.findByOwner(user);
+        return hotels.stream().map(hotel -> modelMapper.map(hotel, HotelDto.class)).toList();
     }
 }

@@ -1,6 +1,6 @@
 package com.anubhav.airbnb.services;
 
-import com.anubhav.airbnb.config.JwtConfig;
+
 import com.anubhav.airbnb.dtos.*;
 import com.anubhav.airbnb.exceptions.ResourceConflictException;
 import com.anubhav.airbnb.exceptions.ResourceNotFoundException;
@@ -11,9 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import jakarta.servlet.http.Cookie;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,19 +54,15 @@ public class UserServiceImpl implements UserService
     {
         User user = getCurrentUser();
 
-        if(userRepository.existsByEmailAndIdNot(request.getEmail(), user.getId()))
-        {
-            throw new ResourceConflictException("User already exists with email: " + request.getEmail());
-        }
-
-        boolean emailChanged = !user.getEmail().equals(request.getEmail());
         boolean nameChanged  = !user.getName().equals(request.getName());
 
         user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setGender(request.getGender());
+
         User updatedUser = userRepository.save(user);
 
-        if(emailChanged || nameChanged)
+        if(nameChanged)
         {
             sessionService.deleteAllSessions(user);
             deleteRefreshTokenFromCookie(response);
@@ -128,6 +121,13 @@ public class UserServiceImpl implements UserService
         sessionService.validateSession(refreshToken);
         sessionService.deleteSession(refreshToken);
         deleteRefreshTokenFromCookie(response);
+    }
+
+    @Override
+    public UserDto getMyProfile()
+    {
+        User user = getCurrentUser();
+        return modelMapper.map(user, UserDto.class);
     }
 
     private void deleteRefreshTokenFromCookie(HttpServletResponse response)

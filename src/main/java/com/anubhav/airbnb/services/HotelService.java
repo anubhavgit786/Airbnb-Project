@@ -3,6 +3,8 @@ package com.anubhav.airbnb.services;
 import com.anubhav.airbnb.dtos.HotelDto;
 import com.anubhav.airbnb.dtos.HotelInfoDto;
 
+import java.util.List;
+
 public interface HotelService
 {
     HotelDto getHotelById(Long hotelId);
@@ -11,4 +13,5 @@ public interface HotelService
     void deleteHotel(Long hotelId);
     void activateHotel(Long hotelId);
     HotelInfoDto getHotelInfo(Long hotelId);
+    List<HotelDto> getAllHotels();
 }

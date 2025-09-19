@@ -41,7 +41,7 @@ public class Hotel
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private User owner;
 
     @CreationTimestamp

@@ -2,19 +2,15 @@ package com.anubhav.airbnb.dtos;
 
 import com.anubhav.airbnb.enums.Gender;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 public class GuestDto
 {
     private Long id; // DB generated, no validation
-
-    @Valid
-    private UserDto user;
 
     @NotBlank(message = "Guest name is required")
     private String name;
@@ -26,4 +22,8 @@ public class GuestDto
     @Min(value = 0, message = "Age cannot be negative")
     @Max(value = 120, message = "Age cannot be greater than 120")
     private Integer age;
+
+    @NotNull(message = "Date of birth is required")
+    @Past(message = "Date of birth must be in the past")
+    private LocalDate dateOfBirth;
 }
